@@ -167,6 +167,10 @@ Scroll through that log output, find your `---BEGIN_CREDS---` markers, and copy 
 
 
 ![image](./images/secret.png)
+![image](./images/secret-1.png)
+![image](./images/secret-2.png)
+
+Special thanks to **@Warlock** for contirbuting with these images and to motivate me to make a better writeup 🤓
 -----
 
 ### **8.Getting the Flag** 
